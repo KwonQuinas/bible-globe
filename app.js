@@ -96,14 +96,26 @@ function fixRing(r){
   const c=d3.geoCentroid(feat); let rad=0; a.forEach(p=>{const d=d3.geoDistance(c,p);if(d>rad)rad=d;});
   o={feat,area:d3.geoArea(feat),id:++ringId,c,rad}; ringCache.set(r,o); return o;
 }
+/* 정리된 영역: [바깥 고리, 구멍…] 형태의 다각형 (겹침 제거·경계 일치 처리됨) */
+function fixPoly(P){
+  let o=ringCache.get(P); if(o) return o;
+  const cl=r=>{const a=r.map(p=>[p[0],p[1]]),f=a[0],l=a[a.length-1];if(f[0]!==l[0]||f[1]!==l[1])a.push([f[0],f[1]]);return a;};
+  const small=a=>d3.geoArea({type:'Polygon',coordinates:[a]})>TAU?a.slice().reverse():a;
+  const outer=small(cl(P[0])), rings=[outer];
+  for(let i=1;i<P.length;i++) rings.push(small(cl(P[i])).slice().reverse());
+  const feat={type:'Feature',geometry:{type:'Polygon',coordinates:rings}};
+  const c=d3.geoCentroid({type:'Polygon',coordinates:[outer]}); let rad=0; outer.forEach(p=>{const d=d3.geoDistance(c,p);if(d>rad)rad=d;});
+  o={feat,area:d3.geoArea(feat),id:++ringId,c,rad}; ringCache.set(P,o); return o;
+}
 const resolve=p=>typeof p==='string'?[CITIES[p][1],CITIES[p][2]]:p;
 function prepScene(s){
   if(s._ok) return; s._ok=true; s._y=yearOf(s.yb);
   s.pol.forEach(p=>{
-    if(!p._c0){p._c0=p.col;p.col=recolor(p.col);if(HERO.has((p._c0||'').toLowerCase())&&p.alpha==null)p.alpha=.9;}
-    const rs=(isRing(p.poly)?[p.poly]:p.poly).map(fixRing);
+    const cp=(typeof CLEAN!=='undefined'&&CLEAN[s.id]&&CLEAN[s.id][p.id])||null;
+    if(!p._c0){p._c0=p.col;p.col=(cp&&cp.c)||recolor(p.col);if(HERO.has((p._c0||'').toLowerCase())&&p.alpha==null)p.alpha=.9;}
+    const rs=cp?cp.g.map(fixPoly):(isRing(p.poly)?[p.poly]:p.poly).map(fixRing);
     p._r=rs; p._sig=rs.map(r=>r.id).join('-'); p._area=rs.reduce((a,r)=>a+r.area,0);
-    const big=rs.reduce((a,b)=>b.area>a.area?b:a); p._lab=p.label||big.c; p._rad=big.rad;
+    const big=rs.reduce((a,b)=>b.area>a.area?b:a); p._lab=p.label||(cp&&cp.lab)||big.c; p._rad=big.rad;
   });
   s._cities=(s.cities||[]).map(c=>{const k=Array.isArray(c)?c[0]:c,d=CITIES[k];if(!d)return null;
     const pl=PLACES[k];   // 그 시대에 불리던 이름으로
@@ -240,7 +252,7 @@ for(let g=0;g<256;g++) G2M[g]=g<=23?(g-23)*26:Math.min(8850,(g-23)*46);
 const HYPS={
  day:{neg:[[-450,'#2f7fae',.5],[-150,'#4a97c0',.38],[-30,'#7cb7d3',.14]],
       pos:[[0,'#bee295',0],[250,'#ddec9c',0],[500,'#f5caa0',.17],[1000,'#e2b887',.27],[1800,'#bd9064',.36],[3000,'#8f7a68',.46],[4500,'#dae1dc',.62],[6500,'#f6edeb',.8]],
-      sh:{l:[255,255,255],la:.42,d:[3,4,90],da:.5}},
+      sh:{l:[255,255,255],la:.34,d:[3,4,90],da:.3}},
  night:{neg:[[-450,'#2a86b5',.55],[-150,'#2a6f9a',.42],[-30,'#2b5f84',.16]],
       pos:[[0,'#3a4a3e',0],[250,'#4a5340',0],[500,'#6b5a3e',.2],[1000,'#80693f',.3],[1800,'#97805a',.38],[3000,'#aaa194',.46],[4500,'#c9d2dd',.62],[6500,'#e8eef6',.8]],
       sh:{l:[165,190,232],la:.28,d:[0,0,10],da:.55}}
@@ -339,8 +351,12 @@ function loadRelief(){
   img.src='relief.jpg';
 }
 const rc1=document.createElement('canvas'), rc2=document.createElement('canvas'); let rid1=null,rid2=null;
-function drawRelief(inter){
+let RSH=null;
+function drawRelief(inter,phase){
   if(!showRelief||!RL.ok) return;
+  if(phase==='shade'){ if(!RSH) return;   // 앞서 계산한 음영만 올린다
+    cl.save();cl.globalCompositeOperation='source-atop';cl.imageSmoothingEnabled=true;
+    cl.drawImage(rc2,0,0,RSH.w,RSH.h,0,0,RSH.w*RSH.ds,RSH.h*RSH.ds);cl.restore(); return; }
   const ds=inter?8:4,rw=Math.ceil(W/ds),rh=Math.ceil(H/ds);
   if(inter) lastCoarse=true;
   if(!rid1||rc1.width!==rw||rc1.height!==rh){rc1.width=rc2.width=rw;rc1.height=rc2.height=rh;rid1=rc1.getContext('2d').createImageData(rw,rh);rid2=rc2.getContext('2d').createImageData(rw,rh);}
@@ -378,10 +394,9 @@ function drawRelief(inter){
     }
   }
   rc1.getContext('2d').putImageData(rid1,0,0);rc2.getContext('2d').putImageData(rid2,0,0);
+  RSH={w:rw,h:rh,ds};
   cl.save();cl.globalCompositeOperation='source-atop';cl.imageSmoothingEnabled=true;
-  cl.drawImage(rc1,0,0,rw,rh,0,0,rw*ds,rh*ds);
-  cl.drawImage(rc2,0,0,rw,rh,0,0,rw*ds,rh*ds);
-  cl.restore();
+  cl.drawImage(rc1,0,0,rw,rh,0,0,rw*ds,rh*ds);cl.restore();   // 높이별 색: 나라 색 아래에
 }
 
 /* ───────── 시대에 따라 달라진 땅·바다 ───────── */
@@ -444,12 +459,13 @@ function drawBase(now){
       cl.lineJoin='round';[30,18].forEach((w,i)=>{cl.lineWidth=w;cl.strokeStyle='rgba('+TH.desert+','+(.09+i*.06)*(TH.desertA/.52)+')';cl.stroke(p2);});
       cl.fillStyle='rgba('+TH.desert+','+TH.desertA+')';cl.fill(p2);});
   }
+  drawRelief(inter,'tint');
   if(mode==='now'){
     items.forEach(it=>{const p2=new Path2D();d3.geoPath(proj,p2)(it.f);cl.fillStyle=rgba(dimCol(NOWPAL[Math.floor(it.h/360*NOWPAL.length)%NOWPAL.length]),TH.nowA);cl.fill(p2);});
   }else{
     drawPolities();
   }
-  drawRelief(inter);                                              // 높낮이: 글자 아래에 은은하게
+  drawRelief(inter,'shade');                                      // 높낮이 음영: 글자 아래에 은은하게
   // 구체 음영 (둥글게 보이도록, 가장자리만 살짝 어둡게)
   const gs=cl.createRadialGradient(cx-s*.3,cy-s*.36,s*.05,cx,cy,s*1.02);
   gs.addColorStop(0,TH.shade[0]);gs.addColorStop(.55,TH.shade[1]);gs.addColorStop(1,TH.shade[2]);
@@ -482,7 +498,12 @@ function drawBase(now){
     });
   }
   // 둘레
-  if(!cover){cb.beginPath();pathB({type:'Sphere'});cb.strokeStyle=TH.rim;cb.lineWidth=1.2;cb.stroke();}
+  if(!cover){cb.beginPath();pathB({type:'Sphere'});cb.strokeStyle=TH.rim;cb.lineWidth=1.2;cb.stroke();
+    // 지구 둘레의 눈금(경도에 맞춰 함께 돈다)
+    const r0=s*1.032, r1=s*1.046, r2=s*1.06, off=-view.lon*Math.PI/180;
+    cb.save(); cb.strokeStyle=TH.rim; cb.lineWidth=1; cb.globalAlpha=.6; cb.beginPath();
+    for(let i=0;i<72;i++){const t=off+i*Math.PI/36, ra=i%6===0?r2:r1; cb.moveTo(cx+Math.cos(t)*r0,cy+Math.sin(t)*r0); cb.lineTo(cx+Math.cos(t)*ra,cy+Math.sin(t)*ra);}
+    cb.stroke(); cb.beginPath(); cb.arc(cx,cy,r0,0,TAU); cb.globalAlpha=.3; cb.stroke(); cb.restore();}
 }
 const deskCache=new Map();
 function fixDesert(r){
@@ -497,9 +518,18 @@ function dimCol(c){ // 야간모드: 같은 색상, 밝기만 낮춤
   let v=dimCache.get(c); if(v) return v;
   const h=d3.hsl(c); h.l=Math.min(h.l,.9)*.5; h.s*=.72; v=h.formatHex(); dimCache.set(c,v); return v;
 }
+const edgeCache=new Map();
+function edgeCol(c){ // 경계 안쪽 띠 색: 주간은 같은 색을 짙게, 야간은 밝게
+  const k=TH.id+c; let v=edgeCache.get(k); if(v) return v;
+  const h=d3.hsl(dimCol(c));
+  if(TH.id==='night'){h.l=Math.min(.8,h.l+.3);h.s=Math.min(1,h.s*1.1);} else {h.l=Math.max(.14,h.l*.5);}
+  v=h.formatHex(); edgeCache.set(k,v); return v;
+}
 function drawPolities(){
-  const c0=[view.lon,view.lat],vr=visRad();
+  const c0=[view.lon,view.lat],vr=visRad(), night=TH.id==='night';
   const ls=layers.slice().sort((a,b)=>b.p._area-a.p._area);
+  const items=[];
+  // 1) 면 채우기 (나라끼리 겹치지 않게 정리된 영역이라 색이 섞이지 않는다)
   ls.forEach(l=>{
     const p=l.p; if(l.a<=0.01) return;
     const rs=p._r.filter(r=>d3.geoDistance(c0,r.c)-r.rad<vr); if(!rs.length) return;
@@ -507,9 +537,24 @@ function drawPolities(){
     const al=p.alpha!=null?p.alpha:(p.dash?0.4:0.76);
     if(al>=.6){cl.fillStyle=rgba(TH.land,l.a); cl.fill(p2);}      // 땅 색을 먼저 깔아 녹지 색이 섞이지 않게
     cl.fillStyle=rgba(dimCol(p.col),al*l.a*TH.polyA); cl.fill(p2);
-    cl.lineWidth=p.rank===3?1.0:1.5; cl.strokeStyle='rgba('+TH.border+','+((TH.id==='night'?.5:.62)*l.a)+')';
-    cl.setLineDash(p.dash?[5,4]:[]); cl.stroke(p2); cl.setLineDash([]);
+    items.push({l,p,p2,al});
   });
+  // 2) 경계 안쪽 띠: 나라마다 가장자리가 또렷하게
+  items.forEach(({l,p,p2,al})=>{
+    if(p.dash||al<.5) return;
+    cl.save(); cl.clip(p2); cl.lineJoin='round';
+    cl.lineWidth=night?6:5; cl.strokeStyle=rgba(edgeCol(p.col),(night?.46:.36)*l.a); cl.stroke(p2);
+    cl.restore();
+  });
+  // 3) 가는 경계선: 맞닿은 선은 한 번만 긋는다
+  const solid=new Path2D(); let ns=0;
+  const bc='rgba('+TH.border+','+(night?.62:.7)+')';
+  items.forEach(({l,p,p2})=>{
+    if(p.dash){cl.lineWidth=1.3;cl.strokeStyle='rgba('+TH.border+','+(.62*l.a)+')';cl.setLineDash([5,4]);cl.stroke(p2);cl.setLineDash([]);}
+    else if(l.a>.98){solid.addPath(p2);ns++;}
+    else {cl.lineWidth=1.15;cl.strokeStyle='rgba('+TH.border+','+((night?.62:.7)*l.a)+')';cl.stroke(p2);}
+  });
+  if(ns){cl.lineWidth=1.15;cl.lineJoin='round';cl.strokeStyle=bc;cl.stroke(solid);}
 }
 function toHex(rgb){const m=rgb.match(/\d+/g).map(Number);return '#'+m.map(v=>v.toString(16).padStart(2,'0')).join('');}
 
@@ -990,7 +1035,7 @@ function setScene(i,fly){
   i=clamp(i,0,SCENES.length-1);sceneI=i;scene=SCENES[i];prepScene(scene);Ys=scene._y;updateLand();
   setScenePolys(scene);overlayA=0;
   sel=null;$('#card').classList.remove('show');
-  $('#yb').textContent=scene.yb;$('#ys').textContent=scene.ys||'';
+  $('#yb').textContent=scene.yb;$('#ys').textContent=scene.ys||'';$('#yn').textContent=String(i+1).padStart(2,'0')+' / '+SCENES.length;
   $('#era').textContent=ERA_NAME[scene.era]||'';$('#korea').textContent=scene.korea?'🇰🇷 '+scene.korea.replace(/^한반도:\s*/,'한반도: '):'';
   $('#st').textContent=scene.title;$('#sref').textContent=scene.ref||'';
   const sum=$('#sum');sum.textContent=scene.sum||'';sum.classList.remove('open');

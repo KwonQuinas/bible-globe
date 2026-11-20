@@ -178,6 +178,59 @@ svg.ins{width:100%;height:auto;display:block;border-radius:10px;border:1px solid
 #aboutBox ul{margin:6px 0 10px;padding-left:18px}
 #aboutBox button{margin-top:6px;padding:8px 16px;border-radius:10px;background:var(--peach);color:var(--navy);font-weight:700}
 
+/* ═══ 현대·미래 스타일: 얇은 선 · 유리 질감 · 눈금 (색은 기존 팔레트 그대로) ═══ */
+:root{--glass:linear-gradient(155deg,rgba(var(--mid),.66),rgba(var(--deep),.84));--hair:rgba(162,222,237,.26);--hi:inset 0 1px 0 rgba(255,255,255,.08)}
+body.night{--hair:rgba(150,185,235,.22)}
+#stage{background:
+  linear-gradient(rgba(162,222,237,.032) 1px,transparent 1px) 0 0/44px 44px,
+  linear-gradient(90deg,rgba(162,222,237,.032) 1px,transparent 1px) 0 0/44px 44px,
+  radial-gradient(ellipse at 50% 38%,var(--st0) 0%,var(--st1) 38%,var(--st2) 78%)}
+#brand b{font-size:15.5px;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+#brand b::before{content:"";flex:0 0 auto;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--sky2);
+  background:radial-gradient(circle at 34% 30%,rgba(162,222,237,.9) 0,rgba(162,222,237,0) 52%),linear-gradient(90deg,transparent 47%,rgba(162,222,237,.75) 48%,rgba(162,222,237,.75) 52%,transparent 53%),linear-gradient(0deg,transparent 47%,rgba(162,222,237,.55) 48%,rgba(162,222,237,.55) 52%,transparent 53%);
+  box-shadow:0 0 12px rgba(111,199,224,.55)}
+#brand span{letter-spacing:.5px;font-size:10px;opacity:.78}
+.rb{width:34px;height:34px;border-radius:10px;background:var(--glass);border:1px solid var(--hair);box-shadow:var(--hi);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#modes{padding:3px;border-radius:12px;background:var(--glass);border:1px solid var(--hair);box-shadow:var(--hi),0 8px 26px rgba(0,0,0,.28);backdrop-filter:blur(12px) saturate(1.3);-webkit-backdrop-filter:blur(12px) saturate(1.3)}
+#modes button{border-radius:9px;padding:6px 14px;font-size:12px;letter-spacing:.2px}
+#modes button.on{box-shadow:0 0 14px rgba(var(--acc),.45)}
+#yearbox{border-radius:12px;background:var(--glass);border:1px solid var(--hair);box-shadow:var(--hi),0 8px 26px rgba(0,0,0,.28);backdrop-filter:blur(12px) saturate(1.3);-webkit-backdrop-filter:blur(12px) saturate(1.3)}
+#yearbox::before,#yearbox::after{content:"";position:absolute;width:11px;height:11px;border:1.5px solid var(--peach);opacity:.9;pointer-events:none}
+#yearbox::before{left:-1px;top:-1px;border-right:0;border-bottom:0;border-top-left-radius:12px}
+#yearbox::after{right:-1px;bottom:-1px;border-left:0;border-top:0;border-bottom-right-radius:12px}
+#yb{font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px;text-shadow:0 0 22px rgba(var(--acc),.38)}
+#yn{margin-left:auto;padding-left:12px;font-size:10px;color:var(--sky3);opacity:.85;letter-spacing:1.2px;font-variant-numeric:tabular-nums;align-self:flex-start;margin-top:3px}
+#era{border-radius:6px;letter-spacing:.3px;font-size:11px;background:rgba(var(--acc),.12)}
+.tool{padding:7px 11px;border-radius:10px;background:var(--glass);border:1px solid var(--hair);box-shadow:var(--hi);font-size:11.5px;letter-spacing:.2px;backdrop-filter:blur(10px) saturate(1.3);-webkit-backdrop-filter:blur(10px) saturate(1.3)}
+.tool.on{border-color:rgba(var(--acc),.7);box-shadow:var(--hi),0 0 12px rgba(var(--acc),.22)}
+#land{border-radius:8px;background:rgba(var(--acc),.1);border-color:rgba(var(--acc),.4)}
+#card{border-radius:12px;background:linear-gradient(155deg,rgba(var(--mid),.95),rgba(var(--deep),.97));border:1px solid var(--hair);box-shadow:var(--hi),0 14px 40px rgba(0,0,0,.5);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#card::before{left:0;top:12px;bottom:12px;width:3px;border-radius:0 2px 2px 0;box-shadow:0 0 12px var(--c)}
+#card::after{content:"";position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border:1.5px solid var(--c);border-left:0;border-top:0;border-bottom-right-radius:12px;opacity:.85;pointer-events:none}
+#cardR{border-radius:6px;letter-spacing:.3px;background:rgba(162,222,237,.12);border:1px solid var(--hair)}
+#cardX{border-radius:8px}
+#sheet{border-radius:16px 16px 0 0;background:linear-gradient(180deg,rgba(var(--mid),.84),rgba(var(--deep),.97));border-color:var(--hair);box-shadow:var(--hi),0 -12px 40px rgba(0,0,0,.34);backdrop-filter:blur(14px) saturate(1.25);-webkit-backdrop-filter:blur(14px) saturate(1.25)}
+#grab i{width:34px;height:3px;border-radius:2px;background:var(--hair)}
+#st{letter-spacing:.1px}
+.cap{letter-spacing:.4px;opacity:.75}
+.chip{border-radius:9px;background:rgba(var(--mid),.45);border:1px solid var(--hair);letter-spacing:.1px}
+.chip.on{box-shadow:0 0 14px rgba(var(--acc),.4)}
+.chip.rt{border-left:3px solid var(--rc,#f5caa0)}
+.chip.era{border-radius:8px}
+.step{border-radius:10px;background:rgba(var(--mid),.5);border:1px solid var(--hair)}
+#sl::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--sky))}
+#sl::-webkit-slider-thumb{width:18px;height:18px;margin-top:-7.5px;background:var(--navy);border:2px solid var(--peach);box-shadow:0 0 0 4px rgba(var(--acc),.16),0 0 14px rgba(var(--acc),.6)}
+#sl::-moz-range-thumb{width:14px;height:14px;background:var(--navy);border:2px solid var(--peach);box-shadow:0 0 0 4px rgba(var(--acc),.16),0 0 14px rgba(var(--acc),.6)}
+#ticks i{width:1px;height:5px;margin-left:0;border-radius:0;background:var(--hair);top:-8px}
+#ticks i.e{height:10px;top:-10px;background:var(--sky2)}
+.tl{border-left:1px solid var(--hair)}
+.tl .it::before{border-radius:2px;transform:rotate(45deg);width:8px;height:8px}
+.tl .it.now{border-radius:8px}
+svg.ins{border-radius:8px;border-color:var(--hair)}
+#toast{border-radius:10px;background:var(--glass)}
+#aboutBox{border-radius:14px;border-color:var(--hair);background:linear-gradient(155deg,rgba(var(--mid),1),rgba(var(--deep),1))}
+#aboutBox button{border-radius:9px}
+
 @media (min-width:900px){
   #sheet{left:auto;right:0;top:0;bottom:0;max-width:none;width:390px;max-height:none;border-radius:0;border:0;border-left:1px solid var(--line);margin:0;padding-top:14px}
   #modes{left:calc((100% - 390px)/2)}
@@ -202,7 +255,7 @@ svg.ins{width:100%;height:auto;display:block;border-radius:10px;border:1px solid
 <div id="modes"><button data-m="old" class="on">옛 나라</button><button data-m="both">겹쳐 보기</button><button data-m="now">지금 나라</button></div>
 
 <div id="yearbox">
-  <div id="yr"><span id="yb"></span><span id="ys"></span></div>
+  <div id="yr"><span id="yb"></span><span id="ys"></span><span id="yn"></span></div>
   <div id="era"></div>
   <div id="korea"></div>
   <button id="land" aria-label="이 땅의 이름 변천"></button>
@@ -253,6 +306,7 @@ svg.ins{width:100%;height:auto;display:block;border-radius:10px;border:1px solid
   <li>지명(벧엘, 두로 …)을 누르면 시대별 이름의 변천과 있었던 일이 나옵니다. 줄을 누르면 그 시대로 이동합니다.</li></ul>
   <b>꼭 알아 두세요</b>
   <ul><li>옛 나라의 경계는 학자들의 지도를 참고해 단순하게 그린 <b>근사치</b>입니다. 정확한 국경선이 아닙니다.</li>
+  <li>나라끼리 겹치던 땅은 더 작고 구체적인 나라(지파·속국 등)가 우선하도록 잘라 정리했고, 점선으로 그린 “영향권”만 다른 나라 위에 겹쳐 보입니다.</li>
   <li>연대는 출애굽을 BC 1446년으로 보는 보수적 연대를 따랐고, 학설에 따라 달라질 수 있습니다.</li>
   <li>에덴동산, 갈대바다, 시내산, 오빌 등은 위치가 확실하지 않아 후보지를 점선으로 표시했습니다.</li>
   <li>지명은 쉬운성경 표기를 기준으로 했고(일부는 확인이 더 필요합니다), 이전·이후 이름은 카드에서 볼 수 있습니다. 성경 본문은 요약해 실었습니다.</li></ul>
@@ -267,6 +321,7 @@ svg.ins{width:100%;height:auto;display:block;border-radius:10px;border:1px solid
 <script src="topojson-client.min.js"></script>
 <script src="data-geo.js"></script>
 <script src="data-scenes.js"></script>
+<script src="data-clean.js"></script>
 <script src="data-places1.js"></script>
 <script src="data-places2.js"></script>
 <script src="data-places3.js"></script>
